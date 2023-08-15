@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Python script to calculate berry curvature of the Kane-mele band
+Python script to calculate berry curvature and Chern number of the Kane-mele band
 Author: Jinyang Ni
 """
 from mpl_toolkits.mplot3d.axes3d import Axes3D
@@ -26,11 +26,12 @@ sy = np.array([[0,-1.j],[1.j, 0]])
 s0 = np.array([[1,0],[0,1]])
 
 #spin exchange parameters 
-J1 = 1
-D = 0.1
+J1 = -1
+D = -0.2
+J2 = 0.0
 
 dkp = 0.000001  #
-numk = 201 # the density in the k-points to calculate Berry Curvature
+numk = 401 # the density of k-points to calculate Berry Curvature
 v = 0 
 c = 1
 
@@ -48,7 +49,11 @@ def H(k):
     dk = np.sin(k.dot(d1)) + np.sin(k.dot(d2)) + np.sin(k.dot(d3))
     Hd = D*dk*sz
     
-    return H+Hd
+    jk = np.cos(k.dot(d1)) + np.cos(k.dot(d2)) + np.cos(k.dot(d3))
+    
+    HJ2 = J2*jk*sz
+    
+    return H+Hd+HJ2
 
 def dHx(k):
     k2 = k - np.array([dkp,0])
@@ -78,6 +83,17 @@ def vcdHy(v,k,c):
 
 def Omega(k):
     return 1.j *  (vcdHx(v,k,c) * vcdHy(c,k,v) - vcdHy(v,k,c) * vcdHx(c,k,v))/(ewH(k)[2]-ewH(k)[3])**2
+
+def Chern_number():
+    xxx = np.linspace(-np.pi, np.pi, numk)
+    yyy = np.linspace(-np.pi, np.pi, numk)
+    C = 0 
+    dk = 2.0*np.pi/(numk-1)
+    for i in range(numk):
+        for j in range(numk):
+            k = np.array([xxx[i], yyy[i]])
+            C+=np.real(Omega(k))
+    print(C/2/np.pi*dk*dk)
 
 
 def plot_berry():
@@ -120,4 +136,4 @@ def plot_berry():
 
 
 if __name__=="__main__":
-    plot_berry()
+    Chern_number()
