@@ -11,8 +11,10 @@ import matplotlib.pyplot as plt
 
 #define the high-sym kpoints in the square lattice 
 G = np.array([0,0,0])
-X = np.array([np.pi, np.pi,np.pi])
-M = np.array([np.pi, 0,0])
+R = np.array([np.pi, np.pi, np.pi])
+M = np.array([np.pi, np.pi, 0])
+X = np.array([0, np.pi, 0])
+X2 = np.array([np.pi, 0, 0])
 
 npoints = 50
 
@@ -29,25 +31,31 @@ def Dist(r1, r2):
     return np.linalg.norm(r1-r2)
 
 def k_sym_path():
-    kgx = np.linspace(G,X,npoints)
-    kxm = np.linspace(X,M,npoints)
-    kmg = np.linspace(M,G,npoints)
+    kgr = np.linspace(G,R,npoints)
+    krm = np.linspace(R,M,npoints)
+    kmx = np.linspace(M,X,npoints)
+    kxx2 = np.linspace(X,X2,npoints)
+    kx2g = np.linspace(X2,G,npoints)
     
-    k_point_path = [kgx, kxm, kmg]
+    k_point_path = [kgr, krm, kmx, kxx2, kx2g]
     
-    lgx=Dist(G,X)
-    lxm=Dist(X,M)
-    lmg=Dist(M,G)
+    lgr=Dist(G,R)
+    lrm=Dist(R,M)
+    lmx=Dist(M,X)
+    lxx2=Dist(X,X2)
+    lx2g=Dist(X2,G)
 
     lk = np.linspace(0, 1, npoints)
-    xgx = lgx * lk 
-    xxm = lxm * lk + xgx[-1]
-    xmg = lmg * lk + xxm[-1]
-
-    kpath = np.concatenate((xgx, xxm, xmg), axis=0)
+    xgr = lgr * lk 
+    xrm = lrm * lk + xgr[-1]
+    xmx = lmx * lk + xrm[-1]
+    xxx2 = lxx2 * lk + xmx[-1]
+    xx2g = lx2g * lk + xxx2[-1]
     
-    Node = [0, xgx[-1], xxm[-1], xmg[-1]]
-    k_path = np.concatenate((xgx, xxm, xmg), axis=0)
+    kpath = np.concatenate((xgr, xrm, xmx, xxx2, xx2g), axis=0)
+    
+    Node = [0,  xgr[-1], xrm[-1], xmx[-1], xxx2[-1], xx2g[-1]]
+    k_path = np.concatenate((xgr, xrm, xmx, xxx2, xx2g), axis=0)
     
     return k_point_path, k_path, Node
 
@@ -100,7 +108,7 @@ def plot_band():
             eig = np.hstack(tuple(eig_test))
             plt.plot(k_path, eig,  linewidth=2)
     
-    k_sym_label =  [r"$\Gamma$", r"$X$", r"$M$", r"$\Gamma$"]
+    k_sym_label =  [r"$\Gamma$", r"$R$", r"$M$", r"$X$", r"$X^{\prime}$", r"$\Gamma$"]
     plt.xlim(0, k_path[-1])
     #plt.ylim(0, 1.2)
     plt.xticks(Node, k_sym_label, fontproperties = "Times New Roman", fontsize=20) 

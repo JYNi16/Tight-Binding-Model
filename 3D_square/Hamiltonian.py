@@ -28,7 +28,7 @@ class Square_monolayer():
 
 class Square_3D():
     
-    def __init__(self, t1=-1, soc_r=-0.1, soc_i = -0.5):
+    def __init__(self, t1=-1, soc_r=-0.5, soc_i = -0):
         self.H =np.zeros((2,2), dtype=complex)
         
         self.t1 = t1
@@ -45,8 +45,8 @@ class Square_3D():
         self.H[0,0] = self.t1 * 2 * (np.cos(ky) + np.cos(kx) + np.cos(kz))
         self.H[1,1] = self.t1 * 2 * (np.cos(ky) + np.cos(kx) + np.cos(kz))
         
-        self.H[0,1]  = 1.j * self.soc_i * (np.sin(kx) + np.sin(ky) + np.sin(kz))
-        self.H[1,0]  = -1.j * self.soc_i *(np.sin(kx) + np.sin(ky) + np.sin(kz))
+        self.H[0,1]  = 2 * self.soc_r * (1.j * np.sin(kx) + np.sin(ky))
+        self.H[1,0]  = 2 * self.soc_r *(-1.j * np.sin(kx) + np.sin(ky))
         
         
         return self.H
