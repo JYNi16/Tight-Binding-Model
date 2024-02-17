@@ -83,7 +83,7 @@ def band_post():
     
 def plot_band(): 
     
-    font = {'family': "Times New Roman", "weight":"normal", "size":20,}
+    font = {'family': "Times New Roman", "weight":"normal", "size":24,}
     
     k_point_path, k_path, Node = k_sym_path()
     E_band = np.array(band_post())
@@ -106,17 +106,22 @@ def plot_band():
                 print("eig_test.shape is:", len(eig_test))
             
             eig = np.hstack(tuple(eig_test))
-            plt.plot(k_path, eig,  linewidth=2)
+            if i == 0:
+                plt.plot(k_path, eig, c="red", linewidth=2)
+            else:
+                plt.plot(k_path, eig, c="seagreen", linewidth=2)
+                
+            
     
     k_sym_label =  [r"$\Gamma$", r"$R$", r"$M$", r"$X$", r"$X^{\prime}$", r"$\Gamma$"]
     plt.xlim(0, k_path[-1])
     #plt.ylim(0, 1.2)
-    plt.xticks(Node, k_sym_label, fontproperties = "Times New Roman", fontsize=20) 
+    plt.xticks(Node, k_sym_label, fontproperties = "Times New Roman", fontsize=24) 
     plt.xlabel("$K$-points", font)
     plt.ylabel("Energy($meV$)", font)
     #font_txt = {'style': "normal", "weight":"normal", "size":20, 'family': "Times New Roman"}
-    plt.xticks(fontproperties = "Times New Roman", fontsize=20)
-    plt.yticks(fontproperties = "Times New Roman", fontsize=20)
+    plt.xticks(fontproperties = "Times New Roman", fontsize=24)
+    plt.yticks(fontproperties = "Times New Roman", fontsize=24)
     
     plt.show()
 
