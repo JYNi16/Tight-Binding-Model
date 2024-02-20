@@ -14,21 +14,9 @@ Hamiltonian of the monolayer honeycomb ferromagnets
 
 '''
 
-class Square_monolayer():
-    
-    def __init__(self, tAA=-1):
-        self.H =np.zeros((2,2), dtype=complex)     
-        self.tAA = tAA
-        
-    def model(self, k):
-        kx, ky = k    
-        return np.array(self.tA*(2*np.cos(kx) + 2*np.cos(ky)))
-
-
-
 class Square_3D():
     
-    def __init__(self, e0=0, tab=-1, tc = -1,  soc_r=-0.5):
+    def __init__(self, e0=0, tab=-1, tc = -1,  soc_r=-0.8):
         self.H =np.zeros((2,2), dtype=complex)
         
         self.tab = tab
@@ -38,6 +26,9 @@ class Square_3D():
         #Rashba SOC 
         self.soc_r = soc_r
         
+    def model_nosoc(self, k):
+        kx, ky, kz = k    
+        return np.array(self.tab*(2*np.cos(kx) + 2*np.cos(ky) + 2*np.cos(kz)))
     
     def model(self, k):
         kx, ky, kz = k 

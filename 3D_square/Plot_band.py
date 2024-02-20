@@ -24,7 +24,7 @@ def H(k):
     #ea = np.sort(np.real(np.linalg.eig(model.model_a(k))[0]))
     #eb = np.sort(np.real(np.linalg.eig(model.model_b(k))[0]))
     #e =  np.sort(np.linalg.eig(AFM_s.model(k))[0])
-    e =  np.sort(np.linalg.eig(Square_model.model(k))[0])
+    e =  np.linalg.eigh(Square_model.model(k))[0]
     return e
 
 def Dist(r1, r2):
@@ -77,41 +77,38 @@ def band_post():
     
     for i in range(len(k_point_path)):
         E_values = np.array(list(map(H, k_point_path[i])))
-        E_band.append(np.real(E_values))
-    
-    return E_band
+        if (len(E_values.shape) < 2):
+            E_band.append((np.reshape(E_values,[E_values.shape[0], -1])))
+        else:
+            E_band.append(E_values)
+            
+    return np.array(E_band)
     
 def plot_band(): 
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
     
     k_point_path, k_path, Node = k_sym_path()
-    E_band = np.array(band_post())
+    E_band = band_post()
     shape = E_band.shape
     print("E_band.shape is:", shape)
     
     #np.save(save_path + "/E_band.npy", E_band)
         
     plt.figure(1, figsize=(10,8))
-    if len(shape) <= 2:
-        eig = np.hstack(tuple(E_band))
-        plt.plot(k_path, eig, c="red", linewidth=4)
-        #plt.xticks(Node,Node_label)
     
-    else:
-        for i in range(shape[-1]):
-            eig_test = [] 
-            for j in range(shape[0]):
-                eig_test.append(E_band[j][:,i])
-                print("eig_test.shape is:", len(eig_test))
+    for i in range(shape[-1]):
+        eig_test = [] 
+        for j in range(shape[0]):
+            eig_test.append(E_band[j][:,i])
+            print("eig_test.shape is:", len(eig_test))
             
-            eig = np.hstack(tuple(eig_test))
-            if i == 0:
-                plt.plot(k_path, eig, c="red", linewidth=2)
-            else:
-                plt.plot(k_path, eig, c="seagreen", linewidth=2)
-                
-            
+        eig = np.hstack(tuple(eig_test))
+        if i == 0:
+            plt.plot(k_path, eig, c="red", linewidth=2)
+        else:
+            plt.plot(k_path, eig, c="seagreen", linewidth=2)
+        
     
     k_sym_label =  [r"$\Gamma$", r"$R$", r"$M$", r"$X$", r"$X^{\prime}$", r"$\Gamma$"]
     plt.xlim(0, k_path[-1])
