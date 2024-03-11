@@ -26,7 +26,6 @@ class Square_3D():
         self.H =np.zeros((2,2), dtype=complex)
         
         self.t1 = t1
-
         self.t2 = t2
         
         #SOC
@@ -36,6 +35,8 @@ class Square_3D():
         self.b2 = b2
         self.a3 = a3
         self.b3 = b3
+
+        self.A = 0.1
         
         self.H =np.zeros((2,2), dtype=complex)
         
@@ -49,7 +50,7 @@ class Square_3D():
         self.H[1,1] = T2
 
 
-        return np.array(self.H)
+        return np.array(self.H + self.A*sz)
     
     def model(self, k):
         kx, ky, kz = k 

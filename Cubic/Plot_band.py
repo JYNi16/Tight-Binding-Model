@@ -16,7 +16,7 @@ X = np.array([0, np.pi, 0])
 M = np.array([np.pi, np.pi, 0])
 #X2 = np.array([np.pi, 0, 0])
 
-npoints = 50
+
 
 Square_model = Ham.Square_3D()
 

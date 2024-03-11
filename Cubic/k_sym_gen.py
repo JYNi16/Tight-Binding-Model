@@ -8,7 +8,7 @@ Created on Mon Feb 19 12:24:55 2024
 import numpy as np 
 import config as cf
 
-k_npoints = 50 
+k_npoints = 100
 
 def Dist(r1, r2):
     return np.linalg.norm(r1-r2)
