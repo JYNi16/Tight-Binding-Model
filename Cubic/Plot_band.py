@@ -8,13 +8,13 @@ Created on Sat Feb 17 12:29:19 2024
 import numpy as np
 import Hamiltonian as Ham
 import matplotlib.pyplot as plt
+from k_sym_gen import *
 
-#define the high-sym kpoints in the square lattice 
 G = np.array([0,0,0])
 R = np.array([np.pi, np.pi, np.pi])
-M = np.array([np.pi, np.pi, 0])
 X = np.array([0, np.pi, 0])
-X2 = np.array([np.pi, 0, 0])
+M = np.array([np.pi, np.pi, 0])
+#X2 = np.array([np.pi, 0, 0])
 
 npoints = 50
 
@@ -24,40 +24,8 @@ def H(k):
     #ea = np.sort(np.real(np.linalg.eig(model.model_a(k))[0]))
     #eb = np.sort(np.real(np.linalg.eig(model.model_b(k))[0]))
     #e =  np.sort(np.linalg.eig(AFM_s.model(k))[0])
-    e =  np.linalg.eigh(Square_model.model(k))[0]
+    e =  np.linalg.eigh(Square_model.model_nosoc(k))[0]
     return e
-
-def Dist(r1, r2):
-    return np.linalg.norm(r1-r2)
-
-def k_sym_path():
-    kgr = np.linspace(G,R,npoints)
-    krm = np.linspace(R,M,npoints)
-    kmx = np.linspace(M,X,npoints)
-    kxx2 = np.linspace(X,X2,npoints)
-    kx2g = np.linspace(X2,G,npoints)
-    
-    k_point_path = [kgr, krm, kmx, kxx2, kx2g]
-    
-    lgr=Dist(G,R)
-    lrm=Dist(R,M)
-    lmx=Dist(M,X)
-    lxx2=Dist(X,X2)
-    lx2g=Dist(X2,G)
-
-    lk = np.linspace(0, 1, npoints)
-    xgr = lgr * lk 
-    xrm = lrm * lk + xgr[-1]
-    xmx = lmx * lk + xrm[-1]
-    xxx2 = lxx2 * lk + xmx[-1]
-    xx2g = lx2g * lk + xxx2[-1]
-    
-    kpath = np.concatenate((xgr, xrm, xmx, xxx2, xx2g), axis=0)
-    
-    Node = [0,  xgr[-1], xrm[-1], xmx[-1], xxx2[-1], xx2g[-1]]
-    k_path = np.concatenate((xgr, xrm, xmx, xxx2, xx2g), axis=0)
-    
-    return k_point_path, k_path, Node
 
 #define the Hamiltonian 
 
@@ -72,7 +40,8 @@ def k_sym_path():
     
 
 def band_post():
-    k_point_path, k_path, Node = k_sym_path()
+    k_syms = [G, R, X, M]
+    k_point_path, k_path, Node = k_path_sym_gen(k_syms)
     E_band = []
     
     for i in range(len(k_point_path)):
@@ -87,8 +56,8 @@ def band_post():
 def plot_band(): 
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
-    
-    k_point_path, k_path, Node = k_sym_path()
+    k_syms = [G, R, X, M]
+    k_point_path, k_path, Node = k_path_sym_gen(k_syms)
     E_band = band_post()
     shape = E_band.shape
     print("E_band.shape is:", shape)
@@ -110,7 +79,7 @@ def plot_band():
             plt.plot(k_path, eig, c="seagreen", linewidth=2)
         
     
-    k_sym_label =  [r"$\Gamma$", r"$R$", r"$M$", r"$X$", r"$X^{\prime}$", r"$\Gamma$"]
+    k_sym_label =  [r"$\Gamma$", r"$R$", r"$X$", r"$M$"]
     plt.xlim(0, k_path[-1])
     #plt.ylim(0, 1.2)
     plt.xticks(Node, k_sym_label, fontproperties = "Times New Roman", fontsize=24) 

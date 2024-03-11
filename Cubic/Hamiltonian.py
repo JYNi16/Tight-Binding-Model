@@ -18,13 +18,16 @@ s0 = np.array([[1,0], [0,1]])
 sx = np.array([[0,1], [1,0]])
 sy = np.array([[0,-1.j], [1.j, 0]])
 sz = np.array([[1,0],[0,-1]])
+sq2 = np.sqrt(2)
 
 class Square_3D():
     
-    def __init__(self, tab=-1, a1=0.4, b1=-0.4, a2=-0.4, b2=-0.4, a3=-0.4, b3=-0.4):
+    def __init__(self, t1=-1, t2 = -0.0, a1=0.0, b1=-0.0, a2=-0.0, b2=-0.0, a3=-0.0, b3=-0.0):
         self.H =np.zeros((2,2), dtype=complex)
         
-        self.tab = tab
+        self.t1 = t1
+
+        self.t2 = t2
         
         #SOC
         self.a1 = a1
@@ -37,14 +40,22 @@ class Square_3D():
         self.H =np.zeros((2,2), dtype=complex)
         
     def model_nosoc(self, k):
-        kx, ky, kz = k    
-        return np.array(self.tab*(2*np.cos(kx) + 2*np.cos(ky) + 2*np.cos(kz)))
+        kx, ky, kz = k
+        T2 = self.t2 * (2 * np.cos(sq2 * kx / 2) + 2 * np.cos(sq2 * ky / 2) + 2 * np.cos(sq2 * kz / 2))
+        T1 = self.t1 * (2 * np.cos(kx / 2) + 2 * np.cos(ky / 2) + 2 * np.cos(kz / 2))
+        self.H[0,1] = T1
+        self.H[1,0] = T1
+        self.H[0,0] = T2
+        self.H[1,1] = T2
+
+
+        return np.array(self.H)
     
     def model(self, k):
         kx, ky, kz = k 
         
         #
-        H_t = 2*self.tab*(np.cos(kx) + np.cos(ky) + np.cos(kz))*s0 
+        H_t = 2*self.t1*(np.cos(kx) + np.cos(ky) + np.cos(kz))*s0
         
         H_soc_1 = self.a1*(np.sin(ky)*sx -(np.sin(kx))*sy) + self.b1*(np.sin(ky)*sx + (np.sin(kx))*sy)
         H_soc_2 = self.a2*(np.sin(kz)*sx -(np.sin(kx))*sz) + self.b2*(np.sin(kz)*sx + (np.sin(kx))*sz)
