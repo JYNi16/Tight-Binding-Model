@@ -7,14 +7,17 @@ Created on Fri May 24 18:37:20 2024
 
 import numpy as np 
 from BHZ_model import BHZ 
+from Haldane_model import Honeycomb
 from band_ini import config as cf
 import matplotlib.pyplot as plt
 
-Ham = BHZ(-2.5)
+#Ham = BHZ(-2.5)
+Ham = Honeycomb(1, 0.01)
 
 A=1
 B=1
 delta=1
+sq3 = np.sqrt(3)
 
 Nband = 1
 
@@ -43,19 +46,18 @@ def Vmn(w1, w2, Ds):
             
 
 def Wcc():
-    xx = np.linspace(-np.pi, np.pi, 161)
-    yy = np.linspace(-np.pi, np.pi, 101)
+    #xx = np.linspace(-np.pi, np.pi, 201)
+    #yy = np.linspace(-np.pi, np.pi, 201)
+    xx = cf.xx_h
+    yy = cf.yy_h
     k_sita = []
-    for i in range(len(xx)): 
+    for i in range(len(xx)):
         Ds = np.zeros((Nband, Nband), dtype=complex)
         vD = np.ones((Nband, Nband), dtype=complex)
-        for b in range(len(yy)-1):
-            ky = yy[b]
-            VN = ewH([xx[i], ky])
+        for j in range(len(yy)-1):
             
-            ky2 = yy[b+1]
-            VM = ewH([xx[i], ky2])
-            
+            VM = ewH(np.array([xx[i], yy[j]]))
+            VN = ewH(np.array([xx[i], yy[j+1]]))
             Ds = Vmn(VN, VM, Ds) 
             vD = np.dot(vD, Ds)
         
@@ -75,8 +77,8 @@ def plot_wcc():
     #C=plt.contour(X,Y,Z,10,colors='black',linewidths=0.1)
     plt.yticks(fontproperties='Times New Roman', fontsize = 20)
     plt.xticks(fontproperties='Times New Roman', fontsize = 20)
-    plt.xlim(-np.pi,np.pi)
-    plt.ylim(-0.5,0.5)
+    #plt.xlim(0,2*np.pi)
+    #plt.ylim(-0.5,0.5)
     plt.xlabel(r"$k_{x}$", font)
     plt.ylabel(r"$Wcc$", font)
     plt.xticks(fontsize=20)
