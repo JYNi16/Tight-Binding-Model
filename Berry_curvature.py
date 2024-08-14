@@ -18,7 +18,7 @@ v = 0
 c = 1
 
 #Ham = BHZ(-2.1)
-Ham = Honeycomb(1, 0.1, 0.0, -0.0)
+Ham = Honeycomb(3, 0.1, 0.0, -0.0)
 
 def H(k):
     return Ham.model(k)
@@ -65,10 +65,12 @@ def Chern_number():
     dky = (2*np.pi)/(numk-1)
     dkx = (4*np.pi*sq3/3)/(numk-1) 
     
+    X,Y = np.meshgrid(xx_h, yy_h) 
+    
     for i in range(numk):
         print("ith is:", i)
         for j in range(numk):
-            k = np.array([xx_h[i], yy_h[i]])
+            k = np.array([X[i][j],Y[i][j]])
             C+=np.real(Omega(k))
    
     print("Chern number is:", C/2/np.pi*dkx*dky)
@@ -116,4 +118,4 @@ def plot_berry():
 
 if __name__=="__main__":
     Chern_number()
-    plot_berry()
+    #plot_berry()
