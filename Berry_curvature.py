@@ -10,86 +10,185 @@ import matplotlib.pyplot as plt
 from math import pi
 from BHZ_model import BHZ
 import band_ini.config as cf
-from Haldane_model import Honeycomb
+from Haldane_model import Honeycomb, stripe
 
 dkp = 0.000001  #
 numk = cf.numk # the density of k-points to calculate Berry Curvature
 v = 0 
 c = 1
 
-#Ham = BHZ(-2.1)
-Ham = Honeycomb(3, 0.1, 0.0, -0.0)
-
-def H(k):
-    return Ham.model(k)
-
-def dHx(k):
-    k2 = k - np.array([dkp,0])
-    return (H(k) - H(k2))/dkp
-def dHy(k):
-    k2 = k - np.array([0,dkp])
-    return (H(k) - H(k2))/dkp
-
-#sorting the Eigenstates according to the Eigenvalues
-def ewH(k):
-    e,w=np.linalg.eigh(H(k))
-    w0 = w[:, np.argsort(np.real(e))[0]]
-    w1 = w[:, np.argsort(np.real(e))[1]]
-    e = np.sort(np.real(e))
-    return w0,w1,e[0],e[1]
-
-#<v|dH/dk|c> v,c 
-def vcdHx(v,k,c):
-    dhc = np.dot(dHx(k), ewH(k)[c])
-    vdhc = np.dot(ewH(k)[v].conj(),dhc)
-    return vdhc
-
-def vcdHy(v,k,c):
-    dhc = np.dot(dHy(k), ewH(k)[c])
-    vdhc = np.dot(ewH(k)[v].conj(),dhc)
-    return vdhc  
-
-def Omega(k):
-    return 1.j *  (vcdHx(v,k,c) * vcdHy(c,k,v) - vcdHy(v,k,c) * vcdHx(c,k,v))/(ewH(k)[2]-ewH(k)[3])**2
-
-def Chern_number():
-    #xxx = np.linspace(-np.pi, np.pi, numk)
-    #yyy = np.linspace(-np.pi, np.pi, numk)
-    C = 0 
-    sq3 = np.sqrt(3)
-    dk = 2.0*np.pi/(numk-1)
+class Berry():
     
-    xx_h = cf.xx_h
-    yy_h = cf.yy_h
+    def __init__(self): 
+        
+        #self.Ham = Ham_FM_SSH(J11=-1, J12=-1, J13=-1.5, D=0.0, J2=-0.05, A=-0.0, A0=-0.01)
+        #self.Ham = Ham_FM() 
+        self.Ham = stripe()
+        self.dim = self.Ham.model(np.array([0,0])).shape[0]
+        self.h = 2 #2d_case:2; 3d_case:3
+
+    def H(self,k): 
+        return self.Ham.model(k)
     
-    dky = (2*np.pi)/(numk-1)
-    dkx = (4*np.pi*sq3/3)/(numk-1) 
+    #only useful for 2 band model of honeycomb ferromagnets
+    def dEky(self,k):
+        return self.FM_ssh.dE_dky(k)
     
-    X,Y = np.meshgrid(xx_h, yy_h) 
+    #useful for multi-dimensions band model
+    def dEky_ana(self,k): 
+        w, e = self.ewH(k)
+        k2 = k - np.array([0,dkp])
+        w, e_dy = self.ewH(k2)
+        dEy = []
+        for v in range(self.dim):
+            dEy.append((e[v] - e_dy[v])/dkp ) 
+        return np.array(dEy)
+
+    def dHx(self,k):
+        if self.h < 3:
+            k2 = k - np.array([dkp,0])
+        else:
+            k2 = k - np.array([dkp,0,0])
+        return (self.H(k) - self.H(k2))/dkp
+
+    def dHy(self,k):
+        if self.h < 3:
+            k2 = k - np.array([0,dkp])
+        else:
+            k2 = k - np.array([0,dkp,0])
+        return (self.H(k) - self.H(k2))/dkp 
+
+    #sorting the Eigenstates according to the Eigenvalues
+    #def ewH(self,k):
+    #    '''
+    #    We should notice that np.linalg.eigh is used for Hermitian matrix
+    #    np.linalg.eig is used for Non symmetric matrix
+    #    '''   
+    #    e,w=np.linalg.eig(self.H(k))
+    #    w0 = w[:, np.argsort(np.real(e))[0]]
+    #    w1 = w[:, np.argsort(np.real(e))[1]]
+    #    e = np.sort(np.real(e))
+    #    return w0,w1,e[0],e[1]
     
-    for i in range(numk):
-        print("ith is:", i)
-        for j in range(numk):
-            k = np.array([X[i][j],Y[i][j]])
-            C+=np.real(Omega(k))
-   
-    print("Chern number is:", C/2/np.pi*dkx*dky)
+    def ewH(self, k):
+        '''
+        We should notice that np.linalg.eigh is used for Hermitian matrix
+        np.linalg.eig is used for Non-Hermitian matrix
+        '''  
+        e,w=np.linalg.eigh(self.H(k))
+        w_d = [] 
+        for i in range(self.dim): 
+            w_d.append(w[:, np.argsort(np.real(e))[i]])
+        
+        e_d = np.sort(np.real(e))
+        
+        return np.array(w_d), np.array(e_d)
+    
+    #<v|dH/dkx|c> v,c 
+    #def vcdHx(self,v,k,c):
+    #    dhc = np.dot(self.dHx(k), self.ewH(k)[c])
+    #    vdhc = np.dot(self.ewH(k)[v].conj(),dhc)
+    #    return vdhc
+
+    #<v|dH/dky|c> v,c 
+    #def vcdHy(self,v,k,c):
+    #    dhc = np.dot(self.dHy(k), self.ewH(k)[c])
+        #dhc = np.dot(FM_h.velocity(k)[1], ewH(k)[c])  
+    #    vdhc = np.dot(self.ewH(k)[v].conj(),dhc)
+    #    return vdhc 
+    
+    def vcdHx(self, v,k,c):
+        dhc = np.dot(self.dHx(k), self.ewH(k)[0][c])
+        #dhc = np.dot(self.FM.velocity(k)[0], self.ewH(k)[c])
+        vdhc = np.dot(self.ewH(k)[0][v].conj(),dhc)
+        return vdhc
+
+    def vcdHy(self, v,k,c):
+        dhc = np.dot(self.dHy(k), self.ewH(k)[0][c])
+        #dhc = np.dot(self.FM.velocity(k)[1], self.ewH(k)[c])  
+        vdhc = np.dot(self.ewH(k)[0][v].conj(),dhc)
+        return vdhc
+
+    #def Omega(self,k,v,c):
+        
+    #    return np.real(1.j*(self.vcdHx(v,k,c)*self.vcdHy(c,k,v) - self.vcdHy(v,k,c)*self.vcdHx(c,k,v))/(self.ewH(k)[2]-self.ewH(k)[3])**2)
+    
+    def Omega(self,k,v):
+        '''
+        Parameters
+        ----------
+        k : 2D array
+            (kx, ky)
+        v : int
+            .
+
+        Returns
+        -------
+        omega : TYPE
+            DESCRIPTION.
+
+        '''
+        # the index of band
+        band_idx = [] 
+        for i in range(0, self.dim):
+            if int(i) == v: 
+                continue
+            band_idx.append(int(i))
+        
+        Delta = 0.00001
+        omega = 0 
+        for c in band_idx: 
+            # avoid the degenerate point
+            #if abs(self.ewH(k)[1][v] - self.ewH(k)[1][c]) < 1e-8: 
+            #    continue
+            omega += 2*(np.real(1.j*(self.vcdHx(v,k,c)*self.vcdHy(c,k,v))/(self.ewH(k)[1][v]-self.ewH(k)[1][c] + Delta)**2))          
+        
+        #print("ommega is:", omega)
+        
+        return omega
 
 
-def plot_berry():
+berry = Berry()
 
-    xx = np.linspace(-6,6,numk)
-    yy = np.linspace(-6,6,numk)
+def cal_berry():
+    xx = np.linspace(-4,4,numk)
+    yy = np.linspace(-4,4, numk)
+    #xx = np.linspace(-np.pi,np.pi,numk)
+    #yy = np.linspace(-np.pi,np.pi, numk)
     Z= np.zeros((numk,numk))
     X,Y = np.meshgrid(xx,yy)
     
     print("X.shape is:", X.shape)
     
     for i in range(numk):
-        print("i th is:", i)
+        print("kx th is:", i)
         for j in range(numk):
-            k = np.array([xx[i],yy[j]])
-            Z[i][j]=np.real(Omega(k))
+            k = np.array([X[i][j],Y[i][j]])
+            #print("k is:", k)
+            #Z[i][j]=np.real(berry.mp_berry(k, 0, 1))
+            Z[i][j]=np.real(berry.Omega(k, 2))
+            #print(Z[i][j])
+            #Z[i][j] = berry.dEky(k)[1]
+            
+    return X,Y,Z
+    
+
+def plot_berry():
+    
+    X,Y,Z = cal_berry()
+    print("calculation ok!!!")
+    
+    #save_path = "data_berry/FM/" + J_path_name
+    #if os.path.exists(save_path):
+    #    print("save path {} exist".format(save_path))
+    #else:
+    #    print("save path {} not exist".format(save_path))
+    #    os.makedirs(save_path)
+    #    print("now makedir the save_path")
+    
+    #np.save(save_path + "/X.npy", X)
+    #np.save(save_path + "/Y.npy", Y)
+    #np.save(save_path + "/Z.npy", Z)
 
     #fig = plt.figure()
     #ax = fig.add_subplot(1, 1, 1, projection='3d')
@@ -99,23 +198,24 @@ def plot_berry():
     #ax.set_ylim3d(0.0, 200)
     #ax.set_zlim3d(-0.90, 0.90)
     #plt.show()
-    font = {'family': "Times New Roman", "weight":"normal", "size":20,}
+    font = {'family': "Times New Roman", "weight":"normal", "size":24,}
     fig = plt.figure(figsize=(10,8))
     #plt.scatter(xx, yy, c=Z)
+    #plt.tricontourf(X,Y,Z)
     plt.pcolormesh(X,Y,Z,  cmap='coolwarm', shading='gouraud')
     #C=plt.contour(X,Y,Z,10,colors='black',linewidths=0.1)
     #plt.clabel(C, inline=True,fontsize=10)
     plt.colorbar()
-    plt.xlim(-6,6)
-    plt.ylim(-6,6)
+    plt.xlim(-4,4)
+    plt.ylim(-4,4)
     plt.xlabel(r"$k_{x}$", font)
     plt.ylabel(r"$k_{y}$", font)
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.savefig("Berry_curvature.png", dpi=800)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    #plt.savefig("figure/Topological_Berry_curvature.png", dpi=800)
     plt.show()
 
 
 if __name__=="__main__":
-    Chern_number()
-    #plot_berry()
+    #Chern_number()
+    plot_berry()

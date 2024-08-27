@@ -11,25 +11,32 @@ import matplotlib.pyplot as plt
 import band_ini.config as cf
 import band_ini.k_sym_gen as ksg
 import check_board as cb
-from chain_TB import TB_1D, SSH 
+from chain_TB import TB_1D, SSH
+from check_board import check
+from Twist_bilayer import twist_FM_1
 
 #from Wilson_loop import test_haldane
 
 import BHZ_model as Ham
-from Haldane_model import Honeycomb
-#BHZ_model = Ham.BHZ(-2.1)
-Ham = Honeycomb(3, 0.1, 0.0, -0)
+from Haldane_model import Honeycomb, Zigzag, stripe
+BHZ_model = Ham.BHZ(-2.1)
+Ham = Honeycomb(1, 0.0, 0.0, 0)
 Ham_1d = TB_1D()
 Ham_ssh = SSH()
-#Ham = cb.check()
+Ham_c = check()
+Ham_twist = twist_FM_1()
+Ham_z = Zigzag()
+Ham_s = stripe()
+
 
 
 def H(k):
     #ea = np.sort(np.real(np.linalg.eig(model.model_a(k))[0]))
     #eb = np.sort(np.real(np.linalg.eig(model.model_b(k))[0]))
     #e =  np.sort(np.linalg.eig(AFM_s.model(k))[0])
-    e =  np.linalg.eigh(Ham.model(k))[0]
-    #e = np.linalg.eigh(test_haldane(k))[0]
+    #e =  np.linalg.eigh(BHZ_model.model(k))[0]
+    e = np.linalg.eigh(Ham_s.model(k))[0]
+    #e = np.linalg.eigh(Ham_twist.model(k))[0]
     #e = np.linalg.eigh(Ham_ssh.model(k))[0]
     #e = np.linalg.eigh(Ham_1d.model_AB(k))[0]
     return e
@@ -51,7 +58,9 @@ def band_post(k_syms):
 def plot_band(): 
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
-    k_syms = [cf.G, cf.K, cf.M, cf.K2, cf.G]
+    #k_syms = [cf.X_t, cf.s_G, cf.s_M]
+    #k_syms = [cf.G_t, cf.K_t, cf.M_t, cf.K_t2, cf.G_t]
+    k_syms = [cf.Gz, cf.Xz, cf.Mz, cf.Yz]
     k_point_path, k_path, Node = ksg.k_path_sym_gen(k_syms)
     E_band = band_post(k_syms)
     shape = E_band.shape
@@ -68,14 +77,12 @@ def plot_band():
             print("eig_test.shape is:", len(eig_test))
             
         eig = np.hstack(tuple(eig_test))
-        if i == 0:
-            plt.plot(k_path, eig, c="red", linewidth=2)
-        else:
-            plt.plot(k_path, eig, c="seagreen", linewidth=2)
+        plt.plot(k_path, eig, linewidth=2)
         
     
-    #k_sym_label =  [r"$\Gamma$", r"$X$", r"$\Gamma$"]
-    k_sym_label =  [r"$\Gamma$", r"$K$", r"$M$", r"$K^{\prime}$", r"$\Gamma$"]
+    #k_sym_label =  [r"$X$", r"$\Gamma$", r"$M$"]
+    #k_sym_label =  [r"$\Gamma$", r"$K$", r"$M$", r"$K^{\prime}$", r"$\Gamma$"]
+    k_sym_label =  [r"$\Gamma$", r"$X$", r"$M$", r"$Y$"]
     plt.xlim(0, k_path[-1])
     #plt.ylim(0, 1.2)
     plt.hlines(0, 0, k_path[-1], linestyles="dotted", color = "black")
