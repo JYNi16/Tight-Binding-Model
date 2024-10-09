@@ -2,13 +2,13 @@ import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
 
-# 参数设置
-N = 400  # 单位元胞数目
-t1 = 1.0  # 跳跃参数 t1 (intracell hopping)
-t2 = 1.2  # 跳跃参数 t2 (intercell hopping)
+#setting parameters
+N = 400  # 
+t1 = 1.0  # NN hopping
+t2 = 1.2  # NNN hopping
 
-# 构造哈密顿量矩阵
-H = np.zeros((2*N, 2*N))  # 哈密顿量矩阵大小为 2N x 2N
+# Hamiltonian =
+H = np.zeros((2*N, 2*N))  
 for i in range(N):
     # Intracell hopping (within a unit cell)
     H[2*i, 2*i+1] = t1
@@ -18,10 +18,10 @@ for i in range(N):
         H[2*i+1, 2*i+2] = t2
         H[2*i+2, 2*i+1] = t2
 
-# 求解本征值和本征向量
+#solving eigenvalues and eigenvectors
 eigenvalues, eigenvectors = la.eigh(H)
 
-# 可视化能带结构
+#Band 
 plt.figure(figsize=(8, 6))
 plt.plot(eigenvalues, 'bo', label='Eigenvalues')
 plt.axhline(0, color='r', linestyle='--', label='Zero energy')
@@ -33,17 +33,17 @@ plt.ylabel('Energy')
 plt.legend()
 plt.show()
 
-# 找到接近零的本征值对应的本征向量 (角态)
-tolerance = 1e-5  # 设置零能量的容差
+# seeking the corner states
+tolerance = 1e-5  # tolerance
 zero_energy_indices = np.where(np.abs(eigenvalues) < tolerance)[0]
 corner_states = eigenvectors[:, zero_energy_indices]
 
-# 打印零能量态 (角态) 的本征值和对应的本征向量
+# Print the eigenvalues closed to zero-energy
 print("接近零的本征值:", eigenvalues[zero_energy_indices])
 print("角态对应的本征向量:")
 print(corner_states)
 
-# 可视化角态的概率分布
+# print the probility
 plt.figure(figsize=(8, 6))
 for i, state in enumerate(corner_states.T):
     prob_density = np.abs(state)**2
