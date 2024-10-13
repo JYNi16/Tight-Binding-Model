@@ -10,7 +10,7 @@ import sys
 # t_2 = 0.1
 # phi = np.pi / 4
 
-# W = 2  # width of the ribbon
+# W = 2 # width of the ribbon
 t_1 = 1
 t_2 = 0.0
 # t_2 = 0.1842

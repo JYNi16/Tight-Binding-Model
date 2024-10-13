@@ -1,26 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from Haldane_collection.Lattice import Lattice_2D as Lattice
 a = 2.46
-
-
-class Lattice:
-    def cal_reciprocal_lattice(self):
-        C = 2 * np.pi
-        rlat = np.linalg.inv(self.lattice_vector).T * C
-        self.rlat = rlat
-
-    def __init__(self, lattice_vector, theta, high_symmetry_points, high_symmetry_points_labels):
-        self.lattice_vector = lattice_vector
-        self.theta = theta
-        self.high_symmetry_points = high_symmetry_points
-        self.rlat = None
-        self.high_symmetry_points_labels = high_symmetry_points_labels
-        self.cal_reciprocal_lattice()
-        self.high_symmetry_points_cart = self.rlat[:2, :2] @ self.high_symmetry_points
-        self.a_1 = self.lattice_vector[:, 0]
-        self.a_2 = self.lattice_vector[:, 1]
-        self.b_1 = self.rlat[:, 0]
-        self.b_2 = self.rlat[:, 1]
 
 
 def angle_between(v1, v2):
