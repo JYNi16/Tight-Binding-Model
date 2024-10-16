@@ -81,8 +81,9 @@ def find_NNN(tmp_atom_ind):
         a1_m_a2_neighbor = cell_ind_to_atom_ind(tmp_index_a1=(tmp_index_a1 + 1),
                                                 tmp_index_a2=(tmp_index_a2 - 1),
                                                 sublat='A')
-        result = {"index": [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor],
-                  "phase": np.array([1, -1, 1, -1, 1, -1])}
+        result = [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor]
+        # result = {"index": [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor],
+        #           "phase": np.array([1, -1, 1, -1, 1, -1])}
         return result
 
     if tmp_atom_ind % 2 == 1:  # B sublattice
@@ -104,9 +105,11 @@ def find_NNN(tmp_atom_ind):
         a1_m_a2_neighbor = cell_ind_to_atom_ind(tmp_index_a1=(tmp_index_a1 + 1),
                                                 tmp_index_a2=(tmp_index_a2 - 1),
                                                 sublat='B')
-        result = {"index": [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor],
-                  "phase": np.array([-1, 1, -1, 1, -1, 1])}
+        result = [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor]
+        # result = {"index": [a1_neighbor, a2_neighbor, a2_m_a1_neighbor, m_a1_neighbor, m_a2_neighbor, a1_m_a2_neighbor],
+        #           "phase": np.array([-1, 1, -1, 1, -1, 1])}
         return result
+
 
 if __name__ == "__main__":
     for i in range(N_atom_super_cell):
@@ -140,18 +143,24 @@ if __name__ == "__main__":
                 # 6 next nearest neighbors
                 # print("k", k, "lat.a_1", lat.a_1, "lat.a_2", lat.a_2, "lat.a_2-lat.a_1", lat.a_2 - lat.a_1)
                 # print(f"lat.a_1={np.exp(1j * k @ lat.a_1)}, lat.a_2={np.exp(1j * k @ lat.a_2)}, lat.a_2-lat.a_1={np.exp(1j * k @ (lat.a_2 - lat.a_1))}")
-                H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.exp(neighbor_NNN["phase"][0] * 1j * phi) * np.exp(
-                    1j * k @ -lat.a_1)
-                H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.exp(neighbor_NNN["phase"][1] * 1j * phi) * np.exp(
-                    1j * k @ -lat.a_2)
-                H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.exp(neighbor_NNN["phase"][2] * 1j * phi) * np.exp(
-                    1j * k @ (lat.a_1 - lat.a_2))
-                H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.exp(neighbor_NNN["phase"][3] * 1j * phi) * np.exp(
-                    1j * k @ lat.a_1)
-                H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.exp(neighbor_NNN["phase"][4] * 1j * phi) * np.exp(
-                    1j * k @ lat.a_2)
-                H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.exp(neighbor_NNN["phase"][5] * 1j * phi) * np.exp(
-                    1j * k @ (lat.a_2 - lat.a_1))
+                H[atom_ind, neighbor_NNN[0]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ -lat.a_1))
+                H[atom_ind, neighbor_NNN[1]] = (t2 *
+                                                np.exp(-1j * phi) *
+                                                np.exp(1j * k @ -lat.a_2))
+                H[atom_ind, neighbor_NNN[2]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ (lat.a_1 - lat.a_2)))
+                H[atom_ind, neighbor_NNN[3]] = (t2 *
+                                                np.exp(-1j * phi) *
+                                                np.exp(1j * k @ lat.a_1))
+                H[atom_ind, neighbor_NNN[4]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ lat.a_2))
+                H[atom_ind, neighbor_NNN[5]] = (t2 *
+                                                np.exp(-1j * phi) *
+                                                np.exp(1j * k @ (lat.a_2 - lat.a_1)))
 
             if sub_lattice == "B":  # B sub lattice
                 # 3 nearest neighbors
@@ -159,22 +168,26 @@ if __name__ == "__main__":
                 H[atom_ind, neighbor_NN[1]] = t1 * np.exp(-1j * k @ lat.a_1)
                 H[atom_ind, neighbor_NN[2]] = t1 * np.exp(-1j * k @ lat.a_2)
                 # 6 next nearest neighbors
-                H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.exp(neighbor_NNN["phase"][0] * 1j * phi) * np.exp(
-                    1j * k @ -lat.a_1)
-                H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.exp(neighbor_NNN["phase"][1] * 1j * phi) * np.exp(
-                    1j * k @ -lat.a_2)
-                H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.exp(neighbor_NNN["phase"][2] * 1j * phi) * np.exp(
-                    1j * k @ (lat.a_1 - lat.a_2))
-                H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.exp(neighbor_NNN["phase"][3] * 1j * phi) * np.exp(
-                    1j * k @ lat.a_1)
-                H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.exp(neighbor_NNN["phase"][4] * 1j * phi) * np.exp(
-                    1j * k @ lat.a_2)
-                H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.exp(neighbor_NNN["phase"][5] * 1j * phi) * np.exp(
-                    1j * k @ (lat.a_2 - lat.a_1))
+                H[atom_ind, neighbor_NNN[0]] = (t2 *
+                                                np.exp(-1j * phi) *
+                                                np.exp(1j * k @ -lat.a_1))
+                H[atom_ind, neighbor_NNN[1]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ -lat.a_2))
+                H[atom_ind, neighbor_NNN[2]] = (t2 *
+                                                np.exp(-1j * phi) *
+                                                np.exp(1j * k @ (lat.a_1 - lat.a_2)))
+                H[atom_ind, neighbor_NNN[3]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ lat.a_1))
+                H[atom_ind, neighbor_NNN[4]] = (t2 *
+                                                np.exp(- 1j * phi) *
+                                                np.exp(1j * k @ lat.a_2))
+                H[atom_ind, neighbor_NNN[5]] = (t2 *
+                                                np.exp(1j * phi) *
+                                                np.exp(1j * k @ (lat.a_2 - lat.a_1)))
 
         assert ishermitian(H, atol=1e-8)
-        # if k_ind==3:
-        #     break
         all_eigv[:, k_ind] = np.linalg.eigvalsh(H)
 
     # Plot the band structure

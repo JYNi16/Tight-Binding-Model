@@ -37,32 +37,32 @@ for i in range(N_k):
         eigv = np.linalg.eigvalsh(H)
         all_eigv_atom[i, j, :] = eigv
 
-all_eigv_cell = np.zeros((N_k, N_k, 2), dtype=np.double)
+all_eigv_transform = np.zeros((N_k, N_k, 2), dtype=np.double)
 
 for i in range(N_k):
     for j in range(N_k):
         k = np.array([all_kx[i], all_ky[j]])
         H = np.zeros((2, 2), dtype=complex)
-        H[0, 1] = t1 * (1 +
-                        np.exp(1j * k @ a_1 / np.sqrt(3)) +
-                        np.exp(1j * k @ a_2 / np.sqrt(3)))
+        H[0, 1] = -t1 * (1 +
+                        np.exp(1j * k @ a_1) +
+                        np.exp(1j * k @ a_2))
 
         H[1, 0] = np.conj(H[0, 1])
         eigv = np.linalg.eigvalsh(H)
-        all_eigv_cell[i, j, :] = eigv
+        all_eigv_transform[i, j, :] = eigv
 
 fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
 
 surf = ax.plot_surface(kx, ky,
-                       all_eigv_atom[:, :, 0],
-                       # all_eigv_cell[:, :, 0],
+                       # all_eigv_atom[:, :, 0],
+                       all_eigv_transform[:, :, 0],
                        cmap='viridis',
                        linewidth=0,
                        antialiased=False)
 
 surf2 = ax.plot_surface(kx, ky,
-                        all_eigv_atom[:, :, 1],
-                        # all_eigv_cell[:, :, 1],
+                        # all_eigv_atom[:, :, 1],
+                        all_eigv_transform[:, :, 1],
                         cmap='viridis',
                         linewidth=0,
                         antialiased=False)
