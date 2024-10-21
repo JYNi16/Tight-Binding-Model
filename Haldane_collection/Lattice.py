@@ -37,6 +37,17 @@ graphene_60_lat = Lattice_2D(lattice_vector=np.array([[np.sqrt(3) / 2, -1 / 2, 0
                                                             [0, 0]], dtype=np.float64).T,
                              high_symmetry_points_labels=['$\Gamma$', 'K', 'M', '$K\'$', '$\Gamma$'])
 
+graphene_60_lat_2 = Lattice_2D(lattice_vector=np.array([[1, 0, 0],
+                                                        [1 / 2, np.sqrt(3) / 2, 0],
+                                                        [0, 0, 1]], dtype=np.float64).T * a,
+                               theta=60,
+                               high_symmetry_points=np.array([[0, 0],  # Gamma
+                                                              [1 / 3, 2 / 3],  # K
+                                                              [1 / 2, 1 / 2],  # M
+                                                              [2 / 3, 1 / 3],  # K_prime
+                                                              [0, 0]], dtype=np.float64).T,
+                               high_symmetry_points_labels=['$\Gamma$', 'K', 'M', '$K\'$', '$\Gamma$'])
+
 if __name__ == "__main__":
     a = 2.46
     lat2 = Lattice_2D(lattice_vector=np.array([[1, 0, 0],

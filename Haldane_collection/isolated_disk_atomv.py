@@ -1,21 +1,22 @@
 import numpy as np
 from Lattice import graphene_60_lat as lat
-from scipy.linalg import ishermitian
+from scipy.linalg import ishermitian, eigh
 # from Haldane_collection.plot_band import plot_band
 import matplotlib
 import matplotlib.pyplot as plt
 
 matplotlib.use('TkAgg', force=True)
 
-size_super_cell = 30
+size_super_cell = 25
 t1 = 1
 t2 = 0.2
 phi = np.pi / 2
+eta = 0.35
 # phi =0
 
 N_atom_unit_cell = 2
 N_atom_super_cell = N_atom_unit_cell * size_super_cell ** 2
-eta = 0.35
+
 xrange = 50
 y_range = 0.5
 
@@ -118,7 +119,9 @@ def find_NNN(tmp_atom_ind):
 
 
 for i in range(N_atom_super_cell):
-    print("i", i, "find_NN", find_NN(i), "find_NNN", find_NNN(i))
+    print("i", i,
+          "find_NN", find_NN(i),
+          "find_NNN", find_NNN(i))
 
 # k = np.array([0, 0])
 H = np.zeros((N_atom_super_cell, N_atom_super_cell), dtype=complex)
@@ -134,27 +137,31 @@ for atom_ind in range(N_atom_super_cell):
             H[atom_ind, neighbor_NN[0]] = t1
         if neighbor_NN[1] != -1:
             H[atom_ind, neighbor_NN[1]] = t1 * eta
+            # H[atom_ind, neighbor_NN[1]] = t1
         if neighbor_NN[2] != -1:
             H[atom_ind, neighbor_NN[2]] = t1 * eta
+            # H[atom_ind, neighbor_NN[2]] = t1
         # 6 next nearest neighbors
         if neighbor_NNN["index"][0] != -1:
             # H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.exp(1j * phi)
-            H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.sin(1j*phi)
+            H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.sin(1j * phi)
         if neighbor_NNN["index"][1] != -1:
             # H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.exp(-1j * phi)
-            H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.sin(-1j*phi)
+            H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.sin(-1j * phi)
         if neighbor_NNN["index"][2] != -1:
             # H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.exp(1j * phi) * eta
-            H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(1j*phi) * eta
+            # H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(1j * phi) * eta
+            H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(1j * phi)
         if neighbor_NNN["index"][3] != -1:
             # H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.exp(-1j * phi)
-            H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.sin(-1j*phi)
+            H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.sin(-1j * phi)
         if neighbor_NNN["index"][4] != -1:
             # H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.exp(1j * phi)
-            H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.sin(1j*phi)
+            H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.sin(1j * phi)
         if neighbor_NNN["index"][5] != -1:
             # H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.exp(-1j * phi) * eta
-            H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(-1j*phi) * eta
+            # H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(-1j * phi) * eta
+            H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(-1j * phi)
 
     if sub_lattice == "B":  # B sub lattice
         # 3 nearest neighbors
@@ -162,31 +169,41 @@ for atom_ind in range(N_atom_super_cell):
             H[atom_ind, neighbor_NN[0]] = t1
         if neighbor_NN[1] != -1:
             H[atom_ind, neighbor_NN[1]] = t1 * eta
+            # H[atom_ind, neighbor_NN[1]] = t1
         if neighbor_NN[2] != -1:
             H[atom_ind, neighbor_NN[2]] = t1 * eta
+            # H[atom_ind, neighbor_NN[2]] = t1
         # 6 next nearest neighbors
         if neighbor_NNN["index"][0] != -1:
             # H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.exp(-1j * phi)
-            H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.sin(-1j*phi)
+            H[atom_ind, neighbor_NNN["index"][0]] = t2 * np.sin(-1j * phi)
         if neighbor_NNN["index"][1] != -1:
             # H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.exp(1j * phi)
-            H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.sin(1j*phi)
+            H[atom_ind, neighbor_NNN["index"][1]] = t2 * np.sin(1j * phi)
         if neighbor_NNN["index"][2] != -1:
             # H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.exp(-1j * phi) * eta
-            H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(-1j*phi) * eta
+            # H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(-1j * phi) * eta
+            H[atom_ind, neighbor_NNN["index"][2]] = t2 * np.sin(-1j * phi)
         if neighbor_NNN["index"][3] != -1:
             # H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.exp(1j * phi)
-            H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.sin(1j*phi)
+            H[atom_ind, neighbor_NNN["index"][3]] = t2 * np.sin(1j * phi)
         if neighbor_NNN["index"][4] != -1:
             # H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.exp(-1j * phi)
-            H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.sin(-1j*phi)
+            H[atom_ind, neighbor_NNN["index"][4]] = t2 * np.sin(-1j * phi)
         if neighbor_NNN["index"][5] != -1:
             # H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.exp(1j * phi) * eta
-            H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(1j*phi) * eta
+            # H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(1j * phi) * eta
+            H[atom_ind, neighbor_NNN["index"][5]] = t2 * np.sin(1j * phi)
+
+H = H[1:-1, 1:-1]
 
 assert ishermitian(H, atol=1e-8)
 
-eigv = np.linalg.eigvalsh(H)
+# eigv = np.linalg.eigvalsh(H)
+
+eigv, eigf = eigh(H)
+zero_index = np.nonzero(np.isclose(eigv, 0))
+zero_eng_state = eigf[zero_index]
 plt.plot(eigv, "bo")
 plt.ylim(-y_range, y_range)
 # plt.xlim(N_atom_super_cell/2-xrange,N_atom_super_cell/2+xrange)
