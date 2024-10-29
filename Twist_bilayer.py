@@ -408,7 +408,8 @@ class twist_FM_1():
 
 if __name__ == "__main__":
     FM = twist_FM_1()
-    
+
+
     H = FM.model(np.array([1,1]))
     
     print(H.shape)

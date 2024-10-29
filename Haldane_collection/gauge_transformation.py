@@ -44,8 +44,8 @@ for i in range(N_k):
         k = np.array([all_kx[i], all_ky[j]])
         H = np.zeros((2, 2), dtype=complex)
         H[0, 1] = -t1 * (1 +
-                        np.exp(1j * k @ a_1) +
-                        np.exp(1j * k @ a_2))
+                         np.exp(1j * k @ a_1) +
+                         np.exp(1j * k @ a_2))
 
         H[1, 0] = np.conj(H[0, 1])
         eigv = np.linalg.eigvalsh(H)

@@ -10,9 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import band_ini.config as cf
 import band_ini.k_sym_gen as ksg
-import check_board as cb
-from chain_TB import TB_1D, SSH
-from check_board import check
+# import check_board as cb
+# from chain_TB import TB_1D, SSH
+# from check_board import check
 from Twist_bilayer import twist_FM_1
 
 #from Wilson_loop import test_haldane
@@ -21,12 +21,12 @@ import BHZ_model as Ham
 from Haldane_model import Honeycomb, Zigzag, stripe
 BHZ_model = Ham.BHZ(-2.1)
 Ham = Honeycomb(1, 0.0, 0.0, 0)
-Ham_1d = TB_1D()
-Ham_ssh = SSH()
-Ham_c = check()
+# Ham_1d = TB_1D()
+# Ham_ssh = SSH()
+# Ham_c = check()
 Ham_twist = twist_FM_1()
-Ham_z = Zigzag()
-Ham_s = stripe()
+# Ham_z = Zigzag()
+# Ham_s = stripe()
 
 
 
@@ -35,8 +35,8 @@ def H(k):
     #eb = np.sort(np.real(np.linalg.eig(model.model_b(k))[0]))
     #e =  np.sort(np.linalg.eig(AFM_s.model(k))[0])
     #e =  np.linalg.eigh(BHZ_model.model(k))[0]
-    e = np.linalg.eigh(Ham_s.model(k))[0]
-    #e = np.linalg.eigh(Ham_twist.model(k))[0]
+    # e = np.linalg.eigh(Ham_s.model(k))[0]
+    e = np.linalg.eigh(Ham_twist.model(k))[0]
     #e = np.linalg.eigh(Ham_ssh.model(k))[0]
     #e = np.linalg.eigh(Ham_1d.model_AB(k))[0]
     return e

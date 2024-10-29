@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 matplotlib.use('TkAgg', force=True)
 
-size_super_cell = 25
+size_super_cell = 15
 t1 = 1
 t2 = 0.2
 phi = np.pi / 2
@@ -205,7 +205,7 @@ eigv, eigf = eigh(H)
 zero_index = np.nonzero(np.isclose(eigv, 0))
 zero_eng_state = eigf[zero_index]
 plt.plot(eigv, "bo")
-plt.ylim(-y_range, y_range)
+# plt.ylim(-y_range, y_range)
 # plt.xlim(N_atom_super_cell/2-xrange,N_atom_super_cell/2+xrange)
 plt.plot([0, N_atom_super_cell], [0, 0], "r--")
 
