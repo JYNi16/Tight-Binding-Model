@@ -11,7 +11,7 @@ from ase.build.attach import nearest
 import band_ini.k_sym_gen as ksg
 from scipy.linalg import eigh, ishermitian
 
-from Kane_mele_model.two_by_two_haldane import e_i_phi
+# from Kane_mele_model.two_by_two_haldane import e_i_phi
 
 t_1 = 1
 t_2 = 0.2
@@ -90,6 +90,7 @@ for k_ind, k in enumerate(k_point_path[:]):
     all_eigv[:, k_ind] = eigval
 
 plt.figure()
+
 plt.plot(k_path, all_eigv.T)
 plt.xticks(Node, ["G", "K", "M", "K'", "G"])
 plt.show()

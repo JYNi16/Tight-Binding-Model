@@ -26,7 +26,8 @@ class Lattice_2D:
         self.b_1 = self.rlat[:2, 0]
         self.b_2 = self.rlat[:2, 1]
         self.all_high_sym_points = list(self.high_symmetry_points_cart.T)
-        self.k_point_path, self.k_path, self.Node = ksg.k_path_sym_gen(self.all_high_sym_points, k_npoints=Nk)
+        self.k_point_path, self.k_path, self.Node = ksg.k_path_sym_gen(self.all_high_sym_points,
+                                                                       k_npoints=Nk)
         self.k_point_path = np.array(self.k_point_path).reshape((len(self.all_high_sym_points) - 1) * Nk, 2)
 
 
