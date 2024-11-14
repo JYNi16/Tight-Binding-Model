@@ -7,53 +7,17 @@ from Haldane_collection.Lattice import Lattice_2D as lat
 from time import time
 import matplotlib.pyplot as plt
 import matplotlib
+from Sk_tb import Bloch_H, determine_fermi, unit_cell_cutoff
+from pathos.multiprocessing import ProcessingPool as Pool
 
 matplotlib.use('TkAgg', force=True)
 
-unit_cell_cutoff = 1
-
-d = 3.349  # between two atoms in the same layer
-# d2 = d ** 2
-ac = 1.418
-a0 = ac * np.sqrt(3)
-
-r_0 = 0.184 * a0  # decaying length
-
-q_pi = 3.14
-q_sigma = 7.43
-
 n_k = 20
-
-
-def interlayer_hopping(r_xy, tmp_d, v_sigma=0.48):
-    xy_length = np.linalg.norm(r_xy)
-    tmp_d2 = tmp_d ** 2
-    xy2 = xy_length ** 2
-    r2 = xy2 + tmp_d2
-    r = np.sqrt(r2)
-
-    cos2 = tmp_d2 / r2
-    sin2 = 1 - cos2
-
-    hopping = (sin2 * (-2.7) * np.exp(-((r - ac) / r_0)) +
-               cos2 * v_sigma * np.exp(-((r - d) / r_0)))
-
-    return hopping
-
-
-def h_ij(tmp_i, tmp_j, tmp_phases, tmp_sigma):
-    tmp_i, tmp_j = tbg.sites[tmp_i], tbg.sites[tmp_j]
-    all_paras = zip(all_cell_vectors + (tmp_i.coords[:2] - tmp_j.coords[:2]),
-                    list([tmp_i.coords[2] - tmp_j.coords[2]]) * len(all_cell_vectors),
-                    list([tmp_sigma]) * len(all_cell_vectors))
-    all_hopping = list(map(lambda x: interlayer_hopping(*x), all_paras))
-    tmp2 = all_hopping @ tmp_phases
-    return tmp2
-
 
 if __name__ == '__main__':
     t_start = time()
-    tbg = Structure.from_file('./TBG_tb/POSCAR/TBG_1.vasp')
+    # tbg = Structure.from_file('./TBG_tb/POSCAR/TBG_1.vasp')
+    tbg = Structure.from_file('./TBG_tb/POSCAR/TBG_1_hex.vasp')
     # tbg = Structure.from_file('./TBG_tb/POSCAR/TBG_3.vasp')
     # tbg = Structure.from_file("./TBG_tb/POSCAR/graphene_60_hex_orgin.vasp")
     lattice_tbg = lat(lattice_vector=tbg.lattice.matrix.T,
@@ -72,35 +36,51 @@ if __name__ == '__main__':
                       Nk=n_k)
     # structure_vtk.StructureVis(tbg).show()
     all_eigv = np.zeros((len(lattice_tbg.k_point_path), tbg.num_sites), dtype=np.double)
-
+    all_eigvec = np.zeros((len(lattice_tbg.k_point_path), tbg.num_sites, tbg.num_sites), dtype=complex)
     all_cell_vectors = np.array([a1_index * tbg.lattice.matrix[0][:2] +
                                  a2_index * tbg.lattice.matrix[1][:2]
                                  for a1_index in range(-unit_cell_cutoff, unit_cell_cutoff + 1)
                                  for a2_index in range(-unit_cell_cutoff, unit_cell_cutoff + 1)])
-    for sigma in np.arange(0.1, 500, 0.1):
+    for sigma in np.arange(0.4, 30.0, 0.1):
         for k_ind, k in enumerate(lattice_tbg.k_point_path[:]):
             # print("k", k_ind, k)
-            H = np.zeros((tbg.num_sites, tbg.num_sites), dtype=complex)
-
-            for i, site_i in enumerate(tbg.sites):
-                for j, site_j in enumerate(tbg.sites):
-                    if i == j:
-                        H[i, j] = -0.78
-                        continue
-                    phases = np.exp(1j * all_cell_vectors @ k)
-                    H[i, j] = h_ij(i, j, phases, sigma)
-            assert ishermitian(H, atol=1e-8) is True
+            H = Bloch_H(tmp_k=k, tmp_tbg=tbg, tmp_all_cell_vectors=all_cell_vectors, tmp_sigma=sigma)
             e, w = eigh(H)
             all_eigv[k_ind, :] = e
+            all_eigvec[k_ind, :, :] = w
         t_stop = time()
         print(f"Time: {(t_stop - t_start):.2f}")
         fig = plt.figure()
-        ylim = 2
+        ylim = 3
+
+        fermi_level = determine_fermi(N_sample=30, fermi_Nband=14, tmp_tbg=tbg, tmp_lattice_tbg=lattice_tbg,
+                                      tmp_sigma=sigma, tmp_all_cell_vectors=all_cell_vectors)
+        all_eigv = all_eigv - fermi_level
         plt.plot(lattice_tbg.k_path, all_eigv)
-        plt.ylim(-ylim, ylim)
-        # plt.plot(all_eigv)
+        plt.plot(lattice_tbg.k_path, 0 * np.ones_like(lattice_tbg.k_path), 'k--')
+
+        # plt.plot(lattice_tbg.k_path, fermi_level * np.ones_like(lattice_tbg.k_path), 'k--')
+        # plt.ylim(-ylim, ylim)
         plt.xticks(lattice_tbg.Node, lattice_tbg.high_symmetry_points_labels)
         plt.title(f"sigma = {sigma:.4f}")
-        plt.savefig(f"./TBG_tb/pic/TBG_1_{sigma:.4f}.png")
+        plt.savefig(f"./TBG_tb/with_fermi2/TBG_1_{sigma:.4f}.png")
         plt.close(fig)
-        # plt.show()
+
+        fig, axs = plt.subplots(4, 7, figsize=(70, 40))
+        for ax_ind, ax in enumerate(axs.ravel()):
+            for band_ind, band in enumerate(all_eigv.T):
+                for k_ind, k in enumerate(lattice_tbg.k_path):
+                    atoms_12_vec = [26, 11, 19, 4, 25, 10, 16, 6, 23, 13, 17, 0]
+                    norm_val = norm(all_eigvec[k_ind, atoms_12_vec, band_ind])
+                    prob = norm_val ** 2
+                    if prob > 0.8:
+                        ax.plot(k, band[k_ind], 'bo')
+                        print(
+                            f"k_ind = {k_ind}, band_ind = {band_ind}, atoms_12_sum = {prob:.2f}, {norm(all_eigvec[k_ind, :, band_ind])}")
+                    # print(f"alpha = {np.abs(all_eigvec[k_ind, ax_ind, band_ind])}")
+                    ax.plot(k, band[k_ind], 'ro', alpha=np.abs(all_eigvec[k_ind, ax_ind, band_ind]) ** 2)
+            ax.set_title(f"atom {ax_ind} projection")
+            ax.set_xticks(lattice_tbg.Node, lattice_tbg.high_symmetry_points_labels)
+            # ax.set_ylim(-2, 2)
+        plt.savefig(f"./TBG_tb/with_fermi2/proj_TBG_1_{sigma:.4f}.png")
+        plt.close(fig)
