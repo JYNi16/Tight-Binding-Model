@@ -19,7 +19,7 @@ from Twist_bilayer import twist_FM_1
 
 import BHZ_model as Ham
 from Haldane_model import Honeycomb, Zigzag, stripe
-from AFM_cdw import square_afm
+from AFM_cdw import square_afm, Honey_Neel
 BHZ_model = Ham.BHZ(-2.1)
 Ham = Honeycomb(1, 0.0, 0.0, 0)
 # Ham_1d = TB_1D()
@@ -27,6 +27,7 @@ Ham = Honeycomb(1, 0.0, 0.0, 0)
 # Ham_c = check()
 Ham_twist = twist_FM_1()
 afm_square = square_afm()
+afm_honey_n = Honey_Neel()
 # Ham_z = Zigzag()
 # Ham_s = stripe()
 
@@ -35,11 +36,11 @@ afm_square = square_afm()
 def H(k):
     #ea = np.sort(np.real(np.linalg.eig(model.model_a(k))[0]))
     #eb = np.sort(np.real(np.linalg.eig(model.model_b(k))[0]))
-    #e =  np.sort(np.linalg.eig(AFM_s.model(k))[0])
+    #e =  np.sort(np.linalg.eigh(Ham.model(k))[0])
     #e =  np.linalg.eigh(BHZ_model.model(k))[0]
     # e = np.linalg.eigh(Ham_s.model(k))[0]
     #e = np.linalg.eigh(Ham_twist.model(k))[0]
-    e = np.linalg.eigh(afm_square.model(k))[0]
+    e = np.linalg.eigh(afm_honey_n.model(k))[0]
     #e = np.linalg.eigh(Ham_ssh.model(k))[0]
     #e = np.linalg.eigh(Ham_1d.model_AB(k))[0]
     return e
@@ -61,8 +62,8 @@ def band_post(k_syms):
 def plot_band(): 
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
-    k_syms = [cf.s_X, cf.s_G, cf.s_M]
-    #k_syms = [cf.G_t, cf.K_t, cf.M_t, cf.K_t2, cf.G_t]
+    #k_syms = [cf.s_X, cf.s_G, cf.s_M]
+    k_syms = [cf.G, cf.K, cf.M, cf.K2, cf.G]
     #k_syms = [cf.Gz, cf.Xz, cf.Mz, cf.Yz]
     k_point_path, k_path, Node = ksg.k_path_sym_gen(k_syms)
     E_band = band_post(k_syms)
@@ -83,8 +84,8 @@ def plot_band():
         plt.plot(k_path, eig, linewidth=2)
         
     
-    k_sym_label =  [ r"$X$", r"$\Gamma$", r"$M$"]
-    #k_sym_label =  [r"$\Gamma$", r"$K$", r"$M$", r"$K^{\prime}$", r"$\Gamma$"]
+    #k_sym_label =  [ r"$X$", r"$\Gamma$", r"$M$"]
+    k_sym_label =  [r"$\Gamma$", r"$K$", r"$M$", r"$K^{\prime}$", r"$\Gamma$"]
     #k_sym_label =  [r"$\Gamma$", r"$X$", r"$M$", r"$Y$"]
     plt.xlim(0, k_path[-1])
     #plt.ylim(-1, 1)

@@ -11,6 +11,7 @@ from math import pi
 from BHZ_model import BHZ
 import band_ini.config as cf
 from Haldane_model import Honeycomb, stripe
+from AFM_cdw import square_afm, Honey_Neel
 
 dkp = 0.000001  #
 numk = cf.numk # the density of k-points to calculate Berry Curvature
@@ -23,7 +24,7 @@ class Berry():
         
         #self.Ham = Ham_FM_SSH(J11=-1, J12=-1, J13=-1.5, D=0.0, J2=-0.05, A=-0.0, A0=-0.01)
         #self.Ham = Ham_FM() 
-        self.Ham = stripe()
+        self.Ham = Honey_Neel()
         self.dim = self.Ham.model(np.array([0,0])).shape[0]
         self.h = 2 #2d_case:2; 3d_case:3
 
@@ -151,8 +152,8 @@ class Berry():
 berry = Berry()
 
 def cal_berry():
-    xx = np.linspace(-4,4,numk)
-    yy = np.linspace(-4,4, numk)
+    xx = np.linspace(-6,6,numk)
+    yy = np.linspace(-6,6, numk)
     #xx = np.linspace(-np.pi,np.pi,numk)
     #yy = np.linspace(-np.pi,np.pi, numk)
     Z= np.zeros((numk,numk))
@@ -206,8 +207,8 @@ def plot_berry():
     #C=plt.contour(X,Y,Z,10,colors='black',linewidths=0.1)
     #plt.clabel(C, inline=True,fontsize=10)
     plt.colorbar()
-    plt.xlim(-4,4)
-    plt.ylim(-4,4)
+    plt.xlim(-6, 6)
+    plt.ylim(-6, 6)
     plt.xlabel(r"$k_{x}$", font)
     plt.ylabel(r"$k_{y}$", font)
     plt.xticks(fontsize=20)

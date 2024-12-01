@@ -23,16 +23,16 @@ def linear_Hall(t):
     berry = BC.Berry()
     #AFM_m = Ham_AFM_monolayer(12, 12, 12, 0.6, 0.0, 0.0)
     
-    xx, yy = cf.xx, cf.yy
+    xx, yy = cf.xx_h, cf.yy_h
     X,Y = np.meshgrid(xx, yy) 
     
     #honey lattice
-    #dkx = ((4*sq3/3)*np.pi)/(cf.numk-1)
-    #dky = 2.0*np.pi/(cf.numk-1)
+    dkx = ((4*sq3/3)*np.pi)/(cf.numk-1)
+    dky = 2.0*np.pi/(cf.numk-1)
     
     #square lattice
-    dkx = (2*np.pi)/(cf.numk-1)
-    dky = (2*np.pi)/(cf.numk-1)
+    #dkx = (2*np.pi)/(cf.numk-1)
+    #dky = (2*np.pi)/(cf.numk-1)
     
     j_xy_t = 0
     for i in range(cf.numk):
