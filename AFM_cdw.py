@@ -43,7 +43,7 @@ class square_afm():
         
         return np.array(H)
 
-class Honey_afm():
+class Honey_Neel():
     
     def __init__(self, t1):
         self.t1 = t1
