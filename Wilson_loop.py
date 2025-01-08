@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 24 18:37:20 2024
+Created on 2025/1/8
+
+A script to calculate the Wannier center for toy model 
 
 @author: curry
 """
@@ -12,23 +14,60 @@ from band_ini import config as cf
 import matplotlib.pyplot as plt
 
 #Ham = BHZ(-2.5)
-Ham = Honeycomb(1, 0.01)
+Ham = Honeycomb(1, 0.05)
 
-A=1
-B=1
-delta=1
 sq3 = np.sqrt(3)
-
 Nband = 1
 
-def test_model(k):
+def Haldane_model(k):
     kx, ky = k
+    
+    H =np.zeros((2,2), dtype=complex)
+    t1, D1, A = 1, -0.1, 0
+    gk = np.exp(1.j*k.dot(cf.a1)) + np.exp(1.j*k.dot(cf.a2)) + np.exp(1.j*k.dot(cf.a3))
+    H[0,1] = t1 * gk
+    H[1,0] = t1 * gk.conj()
+    
+    #add NNN conj hopping term 
+    dk = 2*np.sin(k.dot(cf.d1)) + np.sin(k.dot(cf.d2)) + np.sin(k.dot(cf.d3))
+    Hd = D1*dk * cf.sz
+    H2 = A * cf.sz 
+
+def test_model(k):  
+    kx, ky = k
+    A=1
+    B=0.3
+    delta=1
     
     return 1*np.sin(kx)*cf.sx+1*np.sin(ky)*cf.sy+(delta-4*B*(np.sin(kx/2)**2)-4*B*np.sin(ky/2)**2)*cf.sz;
 
+def ssh_2d(k):
+    
+    t1, t2, t3 = 0.2, 0.1, 1.3 
+    
+    tso1, tso2, tso3 = 0.5, 0.3, 0.0
+    m1, m2 = 0, 0
+    
+    kx, ky = k
+    Ho = t1*np.cos(kx)*np.kron(cf.s0,cf.s0)+t2*np.cos(ky)*np.kron(cf.s0, cf.s0)+t3*np.cos(ky/2)*np.kron(cf.sx,cf.s0)
+    Hso1=tso1*np.sin(kx)*np.kron(cf.s0,cf.sz);
+    Hso2 =tso2* np.sin(ky)*np.kron(cf.sz,cf.sz);
+    Hso3 =tso3* np.cos(ky/2)*np.kron(cf.sy,cf.sz);
+
+    M12=m1*np.exp(1j*ky/2)+m2*np.exp(-1j*ky/2);
+    M = np.array([[0, M12],[M12,0]])
+    SSH = np.kron(M,cf.s0);
+
+
+    hzmf=np.kron(np.eye(2),cf.sx);
+    H=Ho+Hso1+Hso2 + Hso3 + SSH+hzmf;
+    
+    return H
+    
+
 def H(k):
     
-    return test_model(k)
+    return Ham.model(k)
 
 def ewH(k):
     e,w=np.linalg.eigh(H(k))
@@ -46,39 +85,44 @@ def Vmn(w1, w2, Ds):
             
 
 def Wcc():
-    #xx = np.linspace(-np.pi, np.pi, 201)
-    #yy = np.linspace(-np.pi, np.pi, 201)
+    #xx = np.linspace(-np.pi, np.pi, 101)
+    #yy = np.linspace(-np.pi, np.pi, 101)
     xx = cf.xx_h
     yy = cf.yy_h
-    k_sita = []
+    wcc_kx = []
     for i in range(len(xx)):
         Ds = np.zeros((Nband, Nband), dtype=complex)
         vD = np.ones((Nband, Nband), dtype=complex)
-        for j in range(len(yy)-1):
-            
+        for j in range(len(yy)):
             VM = ewH(np.array([xx[i], yy[j]]))
-            VN = ewH(np.array([xx[i], yy[j+1]]))
+            if j == len(yy)-1:
+                j = 0
+            else:
+                j += 1
+            VN = ewH(np.array([xx[i], yy[j]]))
             Ds = Vmn(VN, VM, Ds) 
-            vD = np.dot(vD, Ds)
+            #vD = np.dot(vD, Ds)
+            vD = vD*Ds
         
-        k_sita.append(np.real(1.j*(np.log(np.linalg.eig(vD)[0])))/(2*np.pi))
+        wcc_kx.append(np.real(1.j*(np.log(np.linalg.eig(vD)[0])))/(2*np.pi))
     
-    return xx, k_sita[::-1]
+    return xx, np.array(wcc_kx)
 
 
 def plot_wcc():
-    xx, k_sita = Wcc()
+    xx, wcc_kx = Wcc()
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
     fig = plt.figure(figsize=(10,8))
     
-    plt.scatter(xx, k_sita, c= "none", s= 75, marker = "o", edgecolors="r")
+    for i in range(Nband):
+        plt.scatter(xx, wcc_kx[:,i], c= "none", s= 75, marker = "o", edgecolors="r")
     #plt.scatter(xx, yy, c=Z)
     #C=plt.contour(X,Y,Z,10,colors='black',linewidths=0.1)
     plt.yticks(fontproperties='Times New Roman', fontsize = 20)
     plt.xticks(fontproperties='Times New Roman', fontsize = 20)
     #plt.xlim(0,2*np.pi)
-    #plt.ylim(-0.5,0.5)
+    plt.ylim(-0.5,0.5)
     plt.xlabel(r"$k_{x}$", font)
     plt.ylabel(r"$Wcc$", font)
     plt.xticks(fontsize=20)
