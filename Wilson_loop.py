@@ -9,12 +9,14 @@ A script to calculate the Wannier center for toy model
 
 import numpy as np 
 from BHZ_model import BHZ 
-from Haldane_model import Honeycomb
+from Haldane_model import Honeycomb, stripe, Zigzag
 from band_ini import config as cf
 import matplotlib.pyplot as plt
 
 #Ham = BHZ(-2.5)
-Ham = Honeycomb(1, 0.05)
+Ham = Honeycomb(1, 0.1)
+Ham_s = stripe()
+Ham_z = Zigzag()
 
 sq3 = np.sqrt(3)
 Nband = 1
@@ -49,20 +51,21 @@ def ssh_2d(k):
     m1, m2 = 0, 0
     
     kx, ky = k
-    Ho = t1*np.cos(kx)*np.kron(cf.s0,cf.s0)+t2*np.cos(ky)*np.kron(cf.s0, cf.s0)+t3*np.cos(ky/2)*np.kron(cf.sx,cf.s0)
-    Hso1=tso1*np.sin(kx)*np.kron(cf.s0,cf.sz);
-    Hso2 =tso2* np.sin(ky)*np.kron(cf.sz,cf.sz);
-    Hso3 =tso3* np.cos(ky/2)*np.kron(cf.sy,cf.sz);
+    Ho = t1*np.cos(kx)*np.kron(cf.s0,cf.s0)+t2*np.cos(ky)*np.kron(cf.s0, cf.s0)+t3*np.cos(ky/2)*np.kron(cf.sx, cf.s0)
+    Hso1=tso1*np.sin(kx)*np.kron(cf.s0,cf.sz)
+    Hso2 =tso2* np.sin(ky)*np.kron(cf.sz,cf.sz)
+    Hso3 =tso3* np.cos(ky/2)*np.kron(cf.sy,cf.sz)
 
-    M12=m1*np.exp(1j*ky/2)+m2*np.exp(-1j*ky/2);
-    M = np.array([[0, M12],[M12,0]])
-    SSH = np.kron(M,cf.s0);
+    M12 = m1*np.exp(1.j*ky/2)+m2*np.exp(-1.j*ky/2)
+    M21 = m1*np.exp(-1.j*ky/2)+m2*np.exp(1.j*ky/2)
+    M = np.array([[0, M12],[M21,0]])
+    SSH = np.kron(M,cf.s0)
 
 
-    hzmf=np.kron(np.eye(2),cf.sx);
-    H=Ho+Hso1+Hso2 + Hso3 + SSH+hzmf;
+    hzmf=np.kron(np.eye(2),cf.sx)
+    H=Ho+Hso1 + Hso2 + Hso3 + SSH + hzmf
     
-    return H
+    return np.array(H, dtype=complex)
     
 
 def H(k):
@@ -92,7 +95,7 @@ def Wcc():
     wcc_kx = []
     for i in range(len(xx)):
         Ds = np.zeros((Nband, Nband), dtype=complex)
-        vD = np.ones((Nband, Nband), dtype=complex)
+        vD = np.eye(Nband, dtype=complex)
         for j in range(len(yy)):
             VM = ewH(np.array([xx[i], yy[j]]))
             if j == len(yy)-1:
@@ -100,17 +103,24 @@ def Wcc():
             else:
                 j += 1
             VN = ewH(np.array([xx[i], yy[j]]))
-            Ds = Vmn(VN, VM, Ds) 
-            #vD = np.dot(vD, Ds)
-            vD = vD*Ds
+            Ds = Vmn(VM, VN, Ds) 
+            vD = np.dot(vD, Ds)
+            #vD = vD*Ds
         
-        wcc_kx.append(np.real(1.j*(np.log(np.linalg.eig(vD)[0])))/(2*np.pi))
+        #tranform the the eigenvalues to the complex type
+        #e_arr = np.linalg.eigh(vD)[0].astype(complex)
+        
+        #print("eigen is:", np.linalg.eig(vD)[0])
+        
+        wcc_kx.append(np.imag(np.log(np.linalg.eig(vD)[0]))/(2*np.pi))
     
     return xx, np.array(wcc_kx)
 
 
 def plot_wcc():
     xx, wcc_kx = Wcc()
+    
+    #print("wcc_ kx is:", wcc_kx)
     
     font = {'family': "Times New Roman", "weight":"normal", "size":24,}
     fig = plt.figure(figsize=(10,8))
@@ -122,7 +132,7 @@ def plot_wcc():
     plt.yticks(fontproperties='Times New Roman', fontsize = 20)
     plt.xticks(fontproperties='Times New Roman', fontsize = 20)
     #plt.xlim(0,2*np.pi)
-    plt.ylim(-0.5,0.5)
+    plt.ylim(-0.55,0.55)
     plt.xlabel(r"$k_{x}$", font)
     plt.ylabel(r"$Wcc$", font)
     plt.xticks(fontsize=20)
