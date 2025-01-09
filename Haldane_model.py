@@ -17,10 +17,11 @@ from band_ini import config as cf
 
 class Honeycomb():
     
-    def __init__(self, t1, D1, J2, A):
+    def __init__(self, t1=1, t3 = 1,  D1=0, ):
         self.H =np.zeros((2,2), dtype=complex)
         self.t1 = t1 
-        self.D1 = 0.1
+        self.t3 = t3
+        self.D1 = D1
         self.J2 = 0
         self.A =  0
         self.A0 = 0.0
@@ -28,9 +29,9 @@ class Honeycomb():
     
     def model(self, k):
         kx, ky = k
-        gk = np.exp(1.j*k.dot(cf.a1)) + np.exp(1.j*k.dot(cf.a2)) + np.exp(1.j*k.dot(cf.a3))
-        self.H[0,1] = self.t1 * gk
-        self.H[1,0] = self.t1 * gk.conj()
+        gk = self.t1 * np.exp(1.j*k.dot(cf.a1)) + self.t1*np.exp(1.j*k.dot(cf.a2)) + self.t3*np.exp(1.j*k.dot(cf.a3))
+        self.H[0,1] =  gk
+        self.H[1,0] =  gk.conj()
     
         #add NNN conj hopping term 
         dk = 2*np.sin(k.dot(cf.d1)) + np.sin(k.dot(cf.d2)) + np.sin(k.dot(cf.d3))
@@ -44,14 +45,14 @@ class Zigzag():
     
     def __init__(self):
         self.H =np.zeros((4,4), dtype=complex)
-        self.t1 = -1
+        self.t1 = -2
         self.D1 = 0.1
-        self.J2 = 0.1
-        self.M1 =  -0.2
-        self.M2 =  -0.2
+        self.J2 = 0.0
+        self.M1 =  -0.21
+        self.M2 =  -0.21
         self.M3 = 0.2
         self.M4 = 0.2
-        self.tt = -0.1 # titling term
+        self.tt = -0.0 # titling term
     
     def model(self, k):
         kx, ky = k
@@ -87,8 +88,8 @@ class stripe():
     def __init__(self):
         self.H =np.zeros((4,4), dtype=complex)
         self.t1 = -1
-        self.D1 = 0.0
-        self.J2 = 0.1
+        self.D1 = 0.1
+        self.J2 = 0.0
         self.M1 =  0.2
         self.M2 =  -0.2
         self.M3 = 0.2

@@ -14,12 +14,12 @@ from band_ini import config as cf
 import matplotlib.pyplot as plt
 
 #Ham = BHZ(-2.5)
-Ham = Honeycomb(1, 0.1)
+Ham = Honeycomb(1, 3, 0.1)
 Ham_s = stripe()
 Ham_z = Zigzag()
 
 sq3 = np.sqrt(3)
-Nband = 1
+Nband = 2
 
 def Haldane_model(k):
     kx, ky = k
@@ -70,7 +70,7 @@ def ssh_2d(k):
 
 def H(k):
     
-    return Ham.model(k)
+    return Ham_z.model(k)
 
 def ewH(k):
     e,w=np.linalg.eigh(H(k))
@@ -117,6 +117,40 @@ def Wcc():
     return xx, np.array(wcc_kx)
 
 
+def cal_polarization():
+    
+    #xx = np.linspace(-np.pi, np.pi, 101)
+    #yy = np.linspace(-np.pi, np.pi, 101)
+    xx = cf.xx_h
+    yy = cf.yy_h
+    wcc_kx = []
+    for i in range(len(xx)):
+        Ds = np.zeros((Nband, Nband), dtype=complex)
+        vD = np.eye(Nband, dtype=complex)
+        for j in range(len(yy)):
+            VM = ewH(np.array([xx[i], yy[j]]))
+            if j == len(yy)-1:
+                j = 0
+            else:
+                j += 1
+            VN = ewH(np.array([xx[i], yy[j]]))
+            Ds = Vmn(VM, VN, Ds) 
+            vD = np.dot(vD, Ds)
+            #vD = vD*Ds
+        
+        #tranform the the eigenvalues to the complex type
+        #e_arr = np.linalg.eigh(vD)[0].astype(complex)
+        
+        #print("eigen is:", np.linalg.eig(vD)[0])
+        
+        wcc_kx.append(np.imag(np.log(np.linalg.eig(vD)[0]))/(2*np.pi))
+    
+    px = np.mean(wcc_kx)
+    
+    print("px is:", px)
+    
+
+
 def plot_wcc():
     xx, wcc_kx = Wcc()
     
@@ -142,4 +176,5 @@ def plot_wcc():
 
 
 if __name__=="__main__":
+    #cal_polarization()
     plot_wcc()
